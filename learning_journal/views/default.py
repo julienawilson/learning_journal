@@ -4,6 +4,7 @@ from pyramid.view import view_config
 from sqlalchemy.exc import DBAPIError
 
 from ..models import MyModel
+import datetime
 
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
@@ -27,12 +28,18 @@ def blog_view(request):
     return {'entry': entry}
 
 
-# @view_config(route_name='new', renderer='../templates/form.jinja2')
-# def create_view(request):
-#     if request.method == "POST":
-#         #get the form stuff
-#         return{}
-#     return{}
+@view_config(route_name='new', renderer='../templates/new_post_template.jinja2')
+def create_view(request):
+    if request.method == "POST":
+        new_title = request.POST['title']
+        new_body = request.POST['body']
+        new_date = datetime.datetime.now().date()
+
+        model = MyModel(title=new_title, date=new_date, body=new_body)
+        request.dbsession.add(model)
+
+        return{}
+    return{}
 
 
 db_err_msg = """\

@@ -39,6 +39,9 @@ def main(argv=sys.argv):
     session_factory = get_session_factory(engine)
 
     entries = [
+    {"title": "Winter Solstice",
+         "date": "December 21, 2016",
+         "body": "Winter Solstice.  Today felt really hard.  The data structure felt more complicated than usual and the pyramid work was difficult to navigate.  I dont think the pyramid material is THAT difficult to understand, but its easy to lose track of where you are/what you've done/whats left to do.  There are lots of places to miss the connections.  The stress of today made it harder to learn.  The amount of work, and the feeling that you will always be behind, and usually not really learn the material, is becoming pretty disheartening."},
         {"title": "Starting out Final Projects",
          "id": '12',
          "date": "December 20, 2016",

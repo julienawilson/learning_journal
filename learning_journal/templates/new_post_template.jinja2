@@ -12,10 +12,10 @@
     <title>Blog Post - Start Bootstrap Template</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="css/blog-post.css" rel="stylesheet">
+    <link href="../static/css/blog-post.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -76,13 +76,15 @@
                 <!-- New Article Form -->
                 <div class="well">
                     <h4>New Post:</h4>
-                    <form role="form">
+                    <form method="POST" action="{{ request.route_url('home') }}" role="form">
                         <div class="form-group">
-                            <p>Title</p>
-                            <input class="form-control"></input>
+                            <label for='title'>Title</label>
+                            <input type="text" value='title' class="form-control"></input>
+                           
                             <br>
-                            <p>Body<p>
-                            <textarea class="form-control" rows="10"></textarea>
+
+                            <label for='body'>Body</label>
+                            <textarea type='text' value='body' class="form-control" rows="10"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
