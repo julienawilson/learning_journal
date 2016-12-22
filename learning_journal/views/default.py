@@ -6,24 +6,33 @@ from sqlalchemy.exc import DBAPIError
 from ..models import MyModel
 
 
-@view_config(route_name='home', renderer='../templates/mytemplate.jinja2')
-def my_view(request):
+@view_config(route_name='home', renderer='../templates/posts.jinja2')
+def home_view(request):
     try:
         query = request.dbsession.query(MyModel)
-        one = query.filter(MyModel.name == 'one').first()
+        # one = query.filter(MyModel.name == 'one').first()
+        entries = query.all()
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
-    return {'one': one, 'project': 'learning_journal'}
+    return {'ENTRIES': entries}
 
 
+@view_config(route_name='blog', renderer='../templates/detail.jinja2')
+def blog_view(request):
+    try:
+        query = request.dbsession.query(MyModel)
+        entry = query.filter(MyModel.id == request.matchdict["id"]).first()
+    except DBAPIError:
+        return Response(db_err_msg, content_type='text/plain', status=500)
+    return {'entry': entry}
 
-@view_config(route_name='create', renderer='../templates/form.jinja2')
-    """DOCSTRING."""
-    def create_view(request):
-        if request.method == "POST":
-            #get the form stuff
-            return{}
-        return{}
+
+# @view_config(route_name='new', renderer='../templates/form.jinja2')
+# def create_view(request):
+#     if request.method == "POST":
+#         #get the form stuff
+#         return{}
+#     return{}
 
 
 db_err_msg = """\
