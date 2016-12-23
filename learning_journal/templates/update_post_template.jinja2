@@ -76,13 +76,13 @@
                 <!-- New Article Form -->
                 <div class="well">
                     <h4>Edit Post: {{ entry['title'] }}</h4>
-                    <form role="form">
+                    <form role="form" method='POST'>
                         <div class="form-group">
-                            <p>{{ entry['title'] }}</p>
-                            <input class="form-control" value="{{ entry['title'] }}"></input>
+                            <label>{{ entry['title'] }}</label>
+                            <input class="form-control" name='title' value="{{ entry['title'] }}"></input>
                             <br>
-                            <p>Body<p>
-                            <textarea class="form-control" rows="10">{{ entry['body'] }}</textarea>
+                            <label>Body<label>
+                            <textarea class="form-control" name='body' rows="10">{{ entry['body'] }}</textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>

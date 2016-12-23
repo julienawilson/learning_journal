@@ -5,6 +5,7 @@ from sqlalchemy.exc import DBAPIError
 
 from ..models import MyModel
 import datetime
+from pyramid.httpexceptions import HTTPFound
 
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
@@ -33,13 +34,37 @@ def create_view(request):
     if request.method == "POST":
         new_title = request.POST['title']
         new_body = request.POST['body']
-        new_date = datetime.datetime.now().date()
+        new_date = str(datetime.datetime.now().date())
 
         model = MyModel(title=new_title, date=new_date, body=new_body)
         request.dbsession.add(model)
 
-        return{}
+        return HTTPFound(request.route_url("home"))
     return{}
+
+
+@view_config(route_name='edit', renderer='../templates/update_post_template.jinja2')
+def edit_view(request):
+    the_id = request.matchdict["id"]
+    try:
+        query = request.dbsession.query(MyModel)
+        entry = query.filter(MyModel.id == the_id).first()
+    except DBAPIError:
+        return Response(db_err_msg, content_type='text/plain', status=500)
+
+    if request.method == "POST":
+        new_title = request.POST['title']
+        new_body = request.POST['body']
+        new_date = str(datetime.datetime.now().date())
+
+        model = request.dbsession.query(MyModel).get(the_id)
+
+        model.title = new_title
+        model.body = new_body
+        model.date = new_date
+
+        return HTTPFound(request.route_url("home"))
+    return {'entry': entry}
 
 
 db_err_msg = """\
