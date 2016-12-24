@@ -12,7 +12,6 @@ from pyramid.httpexceptions import HTTPFound
 def home_view(request):
     try:
         query = request.dbsession.query(MyModel)
-        # one = query.filter(MyModel.name == 'one').first()
         entries = query.all()
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
