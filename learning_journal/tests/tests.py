@@ -1,65 +1,79 @@
-import unittest
+import pytest
 import transaction
 
 from pyramid import testing
 
+from learning_journal.models import (
+    MyModel,
+    get_tm_session,
+)
+from learning_journal.models.meta import Base
+from learning_journal.scripts.initializedb import ENTRIES
 
-def dummy_request(dbsession):
-    return testing.DummyRequest(dbsession=dbsession)
 
+@pytest.fixture(scope="session")
+def configuration(request):
+    """Set up a Configurator instance.
 
-class BaseTest(unittest.TestCase):
-    def setUp(self):
-        self.config = testing.setUp(settings={
-            'sqlalchemy.url': 'sqlite:///:memory:'
-        })
-        self.config.include('.models')
-        settings = self.config.get_settings()
+    This Configurator instance sets up a pointer to the location of the
+        database.
+    It also includes the models from your app's model package.
+    Finally it tears everything down, including the in-memory SQLite database.
 
-        from .models import (
-            get_engine,
-            get_session_factory,
-            get_tm_session,
-            )
+    This configuration will persist for the entire duration of your PyTest run.
+    """
+    config = testing.setUp(settings={
+        'sqlalchemy.url': 'sqlite:///:memory:'
+    })
+    config.include("learning_journal.models")
 
-        self.engine = get_engine(settings)
-        session_factory = get_session_factory(self.engine)
-
-        self.session = get_tm_session(session_factory, transaction.manager)
-
-    def init_database(self):
-        from .models.meta import Base
-        Base.metadata.create_all(self.engine)
-
-    def tearDown(self):
-        from .models.meta import Base
-
+    def teardown():
         testing.tearDown()
-        transaction.abort()
-        Base.metadata.drop_all(self.engine)
+
+    request.addfinalizer(teardown)
+    return config
 
 
-class TestMyViewSuccessCondition(BaseTest):
+@pytest.fixture(scope="function")
+def db_session(configuration, request):
+    """Create a session for interacting with the test database.
 
-    def setUp(self):
-        super(TestMyViewSuccessCondition, self).setUp()
-        self.init_database()
+    This uses the dbsession_factory on the configurator instance to create a
+    new database session. It binds that session to the available engine
+    and returns a new session for every call of the dummy_request object.
+    """
+    SessionFactory = configuration.registry["dbsession_factory"]
+    session = SessionFactory()
+    engine = session.bind
+    Base.metadata.create_all(engine)
 
-        from .models import MyModel
+    def teardown():
+        session.transaction.rollback()
 
-        model = MyModel(name='one', value=55)
-        self.session.add(model)
-
-    def test_passing_view(self):
-        from .views.default import my_view
-        info = my_view(dummy_request(self.session))
-        self.assertEqual(info['one'].name, 'one')
-        self.assertEqual(info['project'], 'learning_journal')
+    request.addfinalizer(teardown)
+    return session
 
 
-class TestMyViewFailureCondition(BaseTest):
+def test_model_gets_added(db_session):
+    """Test that a single entry gets added to the model."""
+    assert len(db_session.query(MyModel).all()) == 0
+    model = MyModel(title="A new post", body="A thing story")
+    db_session.add(model)
+    assert len(db_session.query(MyModel).all()) == 1
 
-    def test_failing_view(self):
-        from .views.default import my_view
-        info = my_view(dummy_request(self.session))
-        self.assertEqual(info.status_int, 500)
+
+def test_all_models_get_added(db_session):
+    """Test that all data from the list of data gets added to db."""
+    for entry in ENTRIES:
+        model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
+        db_session.add(model)
+    query = db_session.query(MyModel)
+    assert len(ENTRIES) == len(query.all())
+
+
+def test_correct_data_get_added(db_session):
+    """Test that all data from the list of data gets added to db."""
+    model = MyModel(title="Title", date='today', day='115', body='this is the body')
+    db_session.add(model)
+    query = db_session.query(MyModel).first()
+    assert query.title == 'Title'
