@@ -156,7 +156,7 @@ def test_edit_page_renders_file_data(dummy_request, add_models):
 # --------- Functional Tests ---------
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def testapp():
     """Create an instance of webtests TestApp for testing routes."""
     from webtest import TestApp
@@ -172,7 +172,7 @@ def testapp():
     return testapp
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def fill_the_db(testapp):
     """Fill the database with some model instances."""
     SessionFactory = testapp.app.registry["dbsession_factory"]
@@ -202,3 +202,41 @@ def test_home_view_renders_correct_data(testapp, fill_the_db):
     response = testapp.get('/', status=200)
     html = response.html
     assert html.find_all("h2")[1]
+
+
+def test_detail_view_renders(testapp):
+    """The detail page has my name in the html."""
+    response = testapp.get('/journal/1', status=200)
+    html = str(response.html)
+    some_text = "Julien Wilson"
+    assert some_text in html
+
+
+def test_detail_view_renders_data(testapp):
+    """The detail page has data from db in the html."""
+    response = testapp.get('/journal/1', status=200)
+    html = response.html
+    assert html.find_all("h1")[0].text
+
+
+def test_edit_view_renders(testapp):
+    """The edit page renders."""
+    response = testapp.get('/journal/1/edit-entry', status=200)
+    html = str(response.html)
+    some_text = "Julien Wilson"
+    assert some_text in html
+
+
+def test_edit_view_renders_data(testapp):
+    """The edit page renders data from db."""
+    response = testapp.get('/journal/1/edit-entry', status=200)
+    html = response.html
+    assert html.find_all("textarea")[0].text
+
+
+def test_create_view_renders(testapp):
+    """The create page has my name in the html."""
+    response = testapp.get('/journal/1', status=200)
+    html = str(response.html)
+    some_text = "Julien Wilson"
+    assert some_text in html
