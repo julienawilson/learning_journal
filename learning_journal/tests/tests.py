@@ -178,8 +178,8 @@ def fill_the_db(testapp):
     SessionFactory = testapp.app.registry["dbsession_factory"]
     with transaction.manager:
         dbsession = get_tm_session(SessionFactory, transaction.manager)
-        import pdb; pdb.set_trace()
-        dbsession.add_all(ENTRIES)
+
+        dbsession.add_all(POSTS)
 
 
 def test_home_view_renders(testapp):
@@ -194,4 +194,11 @@ def test_home_view_renders_data(testapp, fill_the_db):
     """The home page displays data from the database."""
     response = testapp.get('/', status=200)
     html = response.html
-    assert len(html.find_all("tr")) == 101
+    assert len(html.find_all("h2")) == 21
+
+
+def test_home_view_renders_correct_data(testapp, fill_the_db):
+    """The home page displays the correct data from the database."""
+    response = testapp.get('/', status=200)
+    html = response.html
+    assert html.find_all("h2")[1]
