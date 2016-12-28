@@ -12,7 +12,6 @@ from pyramid.httpexceptions import HTTPFound
 def home_view(request):
     print("in the home view")
     try:
-        print("trying....")
         query = request.dbsession.query(MyModel)
         print("queried at least")
         print(query)
