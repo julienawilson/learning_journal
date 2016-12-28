@@ -15,6 +15,7 @@ def home_view(request):
         print("trying....")
         query = request.dbsession.query(MyModel)
         print("queried at least")
+        print(query)
         entries = query.all()
         print(entries)
     except DBAPIError:
