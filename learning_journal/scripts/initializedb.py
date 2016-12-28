@@ -5,7 +5,7 @@ import transaction
 from pyramid.paster import (
     get_appsettings,
     setup_logging,
-    )
+)
 
 from pyramid.scripts.common import parse_vars
 
@@ -14,7 +14,7 @@ from ..models import (
     get_engine,
     get_session_factory,
     get_tm_session,
-    )
+)
 from ..models import MyModel
 
 
@@ -69,6 +69,6 @@ def main(argv=sys.argv):
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
 
-        # for entry in ENTRIES:
-        #     model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
-        #     dbsession.add(model)
+        for entry in ENTRIES:
+            model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
+            dbsession.add(model)
