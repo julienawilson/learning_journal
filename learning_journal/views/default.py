@@ -11,7 +11,6 @@ from pyramid.httpexceptions import HTTPFound
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
 def home_view(request):
     try:
-        import pdb;pdb.set_trace()
         entries = request.dbsession.query(MyModel).all()
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
