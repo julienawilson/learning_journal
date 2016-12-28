@@ -72,3 +72,4 @@ def main(argv=sys.argv):
         for entry in ENTRIES:
             model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
             dbsession.add(model)
+        dbsession.commit()
