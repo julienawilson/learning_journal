@@ -10,7 +10,6 @@ from pyramid.httpexceptions import HTTPFound
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
 def home_view(request):
-    import pdb; pdb.set_trace()
     try:
         entries = request.dbsession.query(MyModel).all()
         # entries = query.all()
