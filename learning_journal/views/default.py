@@ -10,15 +10,10 @@ from pyramid.httpexceptions import HTTPFound
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
 def home_view(request):
-    print("in the home view")
     try:
         query = request.dbsession.query(MyModel)
-        print("queried at least")
-        print(query)
         entries = query.all()
-        print(entries)
     except DBAPIError:
-        print("there was an error in the DBAPI")
         return Response(db_err_msg, content_type='text/plain', status=500)
     return {'ENTRIES': entries}
 

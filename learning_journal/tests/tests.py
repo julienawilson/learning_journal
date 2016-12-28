@@ -172,7 +172,7 @@ def testapp():
     return testapp
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def fill_the_db(testapp):
     """Fill the database with some model instances."""
     SessionFactory = testapp.app.registry["dbsession_factory"]
@@ -236,7 +236,7 @@ def test_edit_view_renders_data(testapp):
 
 def test_create_view_renders(testapp):
     """The create page has my name in the html."""
-    response = testapp.get('/journal/1', status=200)
+    response = testapp.get('/journal/new-entry', status=200)
     html = str(response.html)
     some_text = "Julien Wilson"
     assert some_text in html
