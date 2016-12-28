@@ -69,6 +69,6 @@ def main(argv=sys.argv):
     with transaction.manager:
         dbsession = get_tm_session(session_factory, transaction.manager)
 
-        for entry in ENTRIES:
-            model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
-            dbsession.add(model)
+        # for entry in ENTRIES:
+        #     model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
+        #     dbsession.add(model)
