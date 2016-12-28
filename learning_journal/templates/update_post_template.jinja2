@@ -12,10 +12,10 @@
     <title>Blog Post - Start Bootstrap Template</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="css/blog-post.css" rel="stylesheet">
+    <link href="../../static/css/blog-post.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -76,13 +76,12 @@
                 <!-- New Article Form -->
                 <div class="well">
                     <h4>Edit Post: {{ entry['title'] }}</h4>
-                    <form role="form">
+                    <form role="form" method='POST'>
                         <div class="form-group">
-                            <p>{{ entry['title'] }}</p>
-                            <input class="form-control" value="{{ entry['title'] }}"></input>
+                            <label for='title'>Title</label>
+                            <input class="form-control" name='title' value="{{ entry['title'] }}"></input>
                             <br>
-                            <p>Body<p>
-                            <textarea class="form-control" rows="10">{{ entry['body'] }}</textarea>
+                            <textarea class="form-control" name='body' rows="10">{{ entry['body'] }}</textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
@@ -115,10 +114,10 @@
     <!-- /.container -->
 
     <!-- jQuery -->
-    <script src="js/jquery.js"></script>
+    <script src="../../static/js/jquery.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="../../static/js/bootstrap.min.js"></script>
 
 </body>
 

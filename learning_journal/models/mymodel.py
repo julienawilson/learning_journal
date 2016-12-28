@@ -12,8 +12,10 @@ class MyModel(Base):
     __tablename__ = 'models'
     id = Column(Integer, primary_key=True)
     title = Column(Unicode)
+    day = Column(Unicode)
     date = Column(Unicode)
     body = Column(Unicode)
 
 
-Index('my_index', MyModel.title, MyModel.date, MyModel.body, unique=True, mysql_length=255)
+
+Index('my_index', MyModel.title, MyModel.day, MyModel.date, MyModel.body, unique=True, mysql_length=255)
