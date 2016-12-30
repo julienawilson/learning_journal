@@ -208,12 +208,12 @@ def test_home_view_renders_data(testapp, fill_the_db):
     assert len(html.find_all("h2")) == db_len + 1
 
 
-# def test_home_view_renders_correct_data(testapp, fill_the_db):
-#     """The home page displays the correct data from the database."""
-#     response = testapp.get('/', status=200)
-#     html = response.html
-#     import pdb; pdb.set_trace()
-#     assert html.find_all("h2")[1].text# == POSTS[0].body
+def test_home_view_renders_correct_data(testapp, fill_the_db):
+    """The home page displays the correct data from the database."""
+    response = testapp.get('/', status=200)
+    html = response.html
+    title = fill_the_db.query(MyModel).first().title
+    assert title in html.find_all('h2')[1].text
 
 
 def test_detail_view_renders(testapp):
