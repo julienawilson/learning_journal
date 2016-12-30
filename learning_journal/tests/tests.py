@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import transaction
 
@@ -10,6 +12,8 @@ from learning_journal.scripts.initializedb import ENTRIES
 
 import faker
 import datetime
+
+TEST_DB = 'postgres://julienawilson:postword!!@localhost:5432/test_db'
 
 
 @pytest.fixture(scope="session")
@@ -24,7 +28,7 @@ def configuration(request):
     This configuration will persist for the entire duration of your PyTest run.
     """
     config = testing.setUp(settings={
-        'sqlalchemy.url': 'sqlite:///:memory:'
+        'sqlalchemy.url': TEST_DB
     })
     config.include("learning_journal.models")
 
@@ -68,6 +72,7 @@ POSTS = [MyModel(
     title=FAKE.name(),
     date=str(datetime.datetime.now()),
     body=FAKE.text(100),
+    day=i
 ) for i in range(20)]
 
 
@@ -140,7 +145,7 @@ def test_home_page_renders_file_data(dummy_request, add_models):
 def test_detail_page_renders_file_data(dummy_request, add_models):
     """My detail page view returns some appropriate data."""
     from learning_journal.views.default import blog_view
-    dummy_request.matchdict['id'] = '10'
+    dummy_request.matchdict['id'] = POSTS[0].id
     response = blog_view(dummy_request)['entry'].body
     assert response
 
@@ -148,7 +153,7 @@ def test_detail_page_renders_file_data(dummy_request, add_models):
 def test_edit_page_renders_file_data(dummy_request, add_models):
     """My edit page view returns data from the approriate post."""
     from learning_journal.views.default import edit_view
-    dummy_request.matchdict['id'] = '12'
+    dummy_request.matchdict['id'] = POSTS[2].id
     response = edit_view(dummy_request)['entry'].body
     assert response
 
@@ -156,13 +161,13 @@ def test_edit_page_renders_file_data(dummy_request, add_models):
 # --------- Functional Tests ---------
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def testapp():
     """Create an instance of webtests TestApp for testing routes."""
     from webtest import TestApp
     from learning_journal import main
 
-    app = main({}, **{"sqlalchemy.url": 'sqlite:///:memory:'})
+    app = main({}, **{"sqlalchemy.url": TEST_DB})
     testapp = TestApp(app)
 
     SessionFactory = app.registry["dbsession_factory"]
@@ -172,14 +177,14 @@ def testapp():
     return testapp
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def fill_the_db(testapp):
     """Fill the database with some model instances."""
     SessionFactory = testapp.app.registry["dbsession_factory"]
     with transaction.manager:
         dbsession = get_tm_session(SessionFactory, transaction.manager)
-
         dbsession.add_all(POSTS)
+    return dbsession
 
 
 def test_home_view_renders(testapp):
@@ -190,18 +195,25 @@ def test_home_view_renders(testapp):
     assert some_text in html
 
 
+def test_404_error(testapp):
+    """The site returns a 404 error on bad request."""
+    testapp.get('/notasite', status=404)
+
+
 def test_home_view_renders_data(testapp, fill_the_db):
     """The home page displays data from the database."""
     response = testapp.get('/', status=200)
     html = response.html
-    assert len(html.find_all("h2")) == 21
+    db_len = len(fill_the_db.query(MyModel).all())
+    assert len(html.find_all("h2")) == db_len + 1
 
 
 def test_home_view_renders_correct_data(testapp, fill_the_db):
     """The home page displays the correct data from the database."""
     response = testapp.get('/', status=200)
     html = response.html
-    assert html.find_all("h2")[1]
+    title = fill_the_db.query(MyModel).first().title
+    assert title in html.find_all('h2')[1].text
 
 
 def test_detail_view_renders(testapp):
@@ -227,6 +239,19 @@ def test_edit_view_renders(testapp):
     assert some_text in html
 
 
+def test_edit_view_post(testapp):
+    """The edit page renders."""
+    post_params = {
+        'title': FAKE.name(),
+        'body': FAKE.address()
+    }
+    response = testapp.post('/journal/1/edit-entry', post_params, status=302)
+    home_response = response.follow()
+    html = str(home_response.html)
+    some_text = post_params['title']
+    assert some_text in html
+
+
 def test_edit_view_renders_data(testapp):
     """The edit page renders data from db."""
     response = testapp.get('/journal/1/edit-entry', status=200)
@@ -236,7 +261,20 @@ def test_edit_view_renders_data(testapp):
 
 def test_create_view_renders(testapp):
     """The create page has my name in the html."""
-    response = testapp.get('/journal/1', status=200)
+    response = testapp.get('/journal/new-entry', status=200)
     html = str(response.html)
     some_text = "Julien Wilson"
+    assert some_text in html
+
+
+def test_create_view_post(testapp):
+    """The create page has my name in the html."""
+    post_params = {
+        'title': FAKE.name(),
+        'body': FAKE.address()
+    }
+    response = testapp.post('/journal/new-entry', post_params, status=302)
+    home_response = response.follow()
+    html = str(home_response.html)
+    some_text = post_params['title']
     assert some_text in html
