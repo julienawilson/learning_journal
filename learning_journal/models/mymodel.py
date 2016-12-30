@@ -18,4 +18,4 @@ class MyModel(Base):
 
 
 
-Index('my_index', MyModel.title, MyModel.day, MyModel.date, MyModel.body, unique=True, mysql_length=255)
+Index('my_index', MyModel.title, MyModel.id, MyModel.day, MyModel.date, MyModel.body, unique=True, mysql_length=255)
