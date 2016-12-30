@@ -23,7 +23,6 @@ def blog_view(request):
     try:
         query = request.dbsession.query(MyModel)
         entry = query.filter(MyModel.id == request.matchdict["id"]).first()
-        import pdb; pdb.set_trace()
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
     return {'entry': entry}
