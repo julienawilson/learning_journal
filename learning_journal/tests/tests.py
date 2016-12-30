@@ -240,7 +240,7 @@ def test_edit_view_renders(testapp):
 
 
 def test_edit_view_post(testapp):
-    """The edit page renders."""
+    """The edit page posts."""
     post_params = {
         'title': FAKE.name(),
         'body': FAKE.address()
@@ -268,7 +268,7 @@ def test_create_view_renders(testapp):
 
 
 def test_create_view_post(testapp):
-    """The create page has my name in the html."""
+    """The create page has my name in the posts."""
     post_params = {
         'title': FAKE.name(),
         'body': FAKE.address()
