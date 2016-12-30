@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import transaction
 
@@ -10,6 +12,8 @@ from learning_journal.scripts.initializedb import ENTRIES
 
 import faker
 import datetime
+
+TEST_DB = 'postgres://julienawilson:postword!!@localhost:5432/test_db'
 
 
 @pytest.fixture(scope="session")
@@ -24,7 +28,7 @@ def configuration(request):
     This configuration will persist for the entire duration of your PyTest run.
     """
     config = testing.setUp(settings={
-        'sqlalchemy.url': 'sqlite:///:memory:'
+        'sqlalchemy.url': TEST_DB
     })
     config.include("learning_journal.models")
 
@@ -141,6 +145,7 @@ def test_detail_page_renders_file_data(dummy_request, add_models):
     """My detail page view returns some appropriate data."""
     from learning_journal.views.default import blog_view
     dummy_request.matchdict['id'] = '10'
+    import pdb; pdb.set_trace()
     response = blog_view(dummy_request)['entry'].body
     assert response
 
@@ -156,87 +161,87 @@ def test_edit_page_renders_file_data(dummy_request, add_models):
 # --------- Functional Tests ---------
 
 
-@pytest.fixture(scope="module")
-def testapp():
-    """Create an instance of webtests TestApp for testing routes."""
-    from webtest import TestApp
-    from learning_journal import main
+# @pytest.fixture
+# def testapp():
+#     """Create an instance of webtests TestApp for testing routes."""
+#     from webtest import TestApp
+#     from learning_journal import main
 
-    app = main({}, **{"sqlalchemy.url": 'sqlite:///:memory:'})
-    testapp = TestApp(app)
+#     app = main({}, **{"sqlalchemy.url": os.environ["DATABASE_URL"]})
+#     testapp = TestApp(app)
 
-    SessionFactory = app.registry["dbsession_factory"]
-    engine = SessionFactory().bind
-    Base.metadata.create_all(bind=engine)
+#     SessionFactory = app.registry["dbsession_factory"]
+#     engine = SessionFactory().bind
+#     Base.metadata.create_all(bind=engine)
 
-    return testapp
-
-
-@pytest.fixture(scope="module")
-def fill_the_db(testapp):
-    """Fill the database with some model instances."""
-    SessionFactory = testapp.app.registry["dbsession_factory"]
-    with transaction.manager:
-        dbsession = get_tm_session(SessionFactory, transaction.manager)
-
-        dbsession.add_all(POSTS)
+#     return testapp
 
 
-def test_home_view_renders(testapp):
-    """The home page has a table in the html."""
-    response = testapp.get('/', status=200)
-    html = str(response.html)
-    some_text = "Learning Blog"
-    assert some_text in html
+# @pytest.fixture
+# def fill_the_db(testapp):
+#     """Fill the database with some model instances."""
+#     SessionFactory = testapp.app.registry["dbsession_factory"]
+#     with transaction.manager:
+#         dbsession = get_tm_session(SessionFactory, transaction.manager)
+
+#         dbsession.add_all(POSTS)
 
 
-def test_home_view_renders_data(testapp, fill_the_db):
-    """The home page displays data from the database."""
-    response = testapp.get('/', status=200)
-    html = response.html
-    assert len(html.find_all("h2")) == 21
+# def test_home_view_renders(testapp):
+#     """The home page has a table in the html."""
+#     response = testapp.get('/', status=200)
+#     html = str(response.html)
+#     some_text = "Learning Blog"
+#     assert some_text in html
 
 
-def test_home_view_renders_correct_data(testapp, fill_the_db):
-    """The home page displays the correct data from the database."""
-    response = testapp.get('/', status=200)
-    html = response.html
-    assert html.find_all("h2")[1]
+# def test_home_view_renders_data(testapp, fill_the_db):
+#     """The home page displays data from the database."""
+#     response = testapp.get('/', status=200)
+#     html = response.html
+#     assert len(html.find_all("h2")) == 21
 
 
-def test_detail_view_renders(testapp):
-    """The detail page has my name in the html."""
-    response = testapp.get('/journal/1', status=200)
-    html = str(response.html)
-    some_text = "Julien Wilson"
-    assert some_text in html
+# def test_home_view_renders_correct_data(testapp, fill_the_db):
+#     """The home page displays the correct data from the database."""
+#     response = testapp.get('/', status=200)
+#     html = response.html
+#     assert html.find_all("h2")[1]
 
 
-def test_detail_view_renders_data(testapp):
-    """The detail page has data from db in the html."""
-    response = testapp.get('/journal/1', status=200)
-    html = response.html
-    assert html.find_all("h1")[0].text
+# def test_detail_view_renders(testapp):
+#     """The detail page has my name in the html."""
+#     response = testapp.get('/journal/1', status=200)
+#     html = str(response.html)
+#     some_text = "Julien Wilson"
+#     assert some_text in html
 
 
-def test_edit_view_renders(testapp):
-    """The edit page renders."""
-    response = testapp.get('/journal/1/edit-entry', status=200)
-    html = str(response.html)
-    some_text = "Julien Wilson"
-    assert some_text in html
+# def test_detail_view_renders_data(testapp):
+#     """The detail page has data from db in the html."""
+#     response = testapp.get('/journal/1', status=200)
+#     html = response.html
+#     assert html.find_all("h1")[0].text
 
 
-def test_edit_view_renders_data(testapp):
-    """The edit page renders data from db."""
-    response = testapp.get('/journal/1/edit-entry', status=200)
-    html = response.html
-    assert html.find_all("textarea")[0].text
+# def test_edit_view_renders(testapp):
+#     """The edit page renders."""
+#     response = testapp.get('/journal/1/edit-entry', status=200)
+#     html = str(response.html)
+#     some_text = "Julien Wilson"
+#     assert some_text in html
 
 
-def test_create_view_renders(testapp):
-    """The create page has my name in the html."""
-    response = testapp.get('/journal/1', status=200)
-    html = str(response.html)
-    some_text = "Julien Wilson"
-    assert some_text in html
+# def test_edit_view_renders_data(testapp):
+#     """The edit page renders data from db."""
+#     response = testapp.get('/journal/1/edit-entry', status=200)
+#     html = response.html
+#     assert html.find_all("textarea")[0].text
+
+
+# def test_create_view_renders(testapp):
+#     """The create page has my name in the html."""
+#     response = testapp.get('/journal/1', status=200)
+#     html = str(response.html)
+#     some_text = "Julien Wilson"
+#     assert some_text in html
