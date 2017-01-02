@@ -1,3 +1,5 @@
+"""Views for the Learning Journal App."""
+
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -6,6 +8,10 @@ from sqlalchemy.exc import DBAPIError
 from ..models import MyModel
 import datetime
 from pyramid.httpexceptions import HTTPFound
+
+from learning_journal.security import check_credentials
+
+from pyramid.security import remember, forget
 
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
@@ -28,7 +34,11 @@ def blog_view(request):
     return {'entry': entry}
 
 
-@view_config(route_name='new', renderer='../templates/new_post_template.jinja2')
+@view_config(
+    route_name='new',
+    renderer='../templates/new_post_template.jinja2',
+    permission='add'
+)
 def create_view(request):
     if request.method == "POST":
         new_title = request.POST['title']
@@ -42,7 +52,11 @@ def create_view(request):
     return{}
 
 
-@view_config(route_name='edit', renderer='../templates/update_post_template.jinja2')
+@view_config(
+    route_name='edit',
+    renderer='../templates/update_post_template.jinja2',
+    permission='add'
+)
 def edit_view(request):
     the_id = request.matchdict["id"]
     try:
@@ -64,6 +78,20 @@ def edit_view(request):
 
         return HTTPFound(request.route_url("home"))
     return {'entry': entry}
+
+
+@view_config(route_name='login', renderer="../templates/login_template.jinja2")
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        if check_credentials(username, password):
+            auth_head = remember(request, username)
+            return HTTPFound(
+                request.route_url("home"),
+                headers=auth_head)
+
+    return {}
 
 
 db_err_msg = """\

@@ -4,3 +4,7 @@ def includeme(config):
     config.add_route('blog', '/journal/{id:\d+}')
     config.add_route('new', '/journal/new-entry')
     config.add_route('edit', '/journal/{id:\d+}/edit-entry')
+    config.add_route('login', '/login')
+    # config.add_route('logout', '/logout')
+
+
