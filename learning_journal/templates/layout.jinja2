@@ -68,46 +68,6 @@
 
         <div class="row">
 
-            <!-- Blog Entries Column -->
-            <div class="col-md-8">
-
-                <h1 class="page-header">
-                    Learning Blog
-                    <small>Surviving Advanced Python</small>
-                </h1>
-
-                <!-- New Post -->
-                <h2>
-                    <a href="/journal/new-entry">New Post</a>
-                </h2>
-                <br/>
-
-                <!-- Most Recent Blog Post -->
-                    {% for entry in ENTRIES %}
-                    <h2>
-                        <a href="/journal/{{entry['id']}}">{{entry['title']}}</a>
-                    </h2>
-                    <p class="lead">
-                        by <a href="/about_me">Julien Wilson</a>
-                    </p>
-                    <p><span class="glyphicon glyphicon-time"></span> Posted on {{ entry['date']}}</p>
-                    <br/>
-
-                    {% endfor %}
-                                
-                <br/>
-
-                <!-- Pager -->
-                <ul class="pager">
-                    <li class="previous">
-                        <a href="#">&larr; Older</a>
-                    </li>
-                    <li class="next">
-                        <a href="#">Newer &rarr;</a>
-                    </li>
-                </ul>
-
-            </div>
 
             <!-- Blog Sidebar Widgets Column -->
             <div class="col-md-4">

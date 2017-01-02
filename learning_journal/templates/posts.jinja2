@@ -56,6 +56,15 @@
                     <li>
                         <a href="#">Contact</a>
                     </li>
+                    {% if request.authenticated_userid %}
+                    <li>
+                        <a href="/logout">Logout</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="/login">Login</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
