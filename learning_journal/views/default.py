@@ -82,6 +82,7 @@ def edit_view(request):
 
 @view_config(route_name='login', renderer="../templates/login_template.jinja2")
 def login_view(request):
+    """View to login user."""
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
@@ -92,6 +93,13 @@ def login_view(request):
                 headers=auth_head)
 
     return {}
+
+
+@view_config(route_name='logout')
+def logout(request):
+    """View to logout user."""
+    auth_head = forget(request)
+    return HTTPFound(request.route_url('home'), headers=auth_head)
 
 
 db_err_msg = """\
