@@ -124,7 +124,6 @@ def test_edit_data_in_db(db_session):
 
 def test_new_entries_are_added(db_session, add_models):
     """New entries get added to the database."""
-    # db_session.add_all()
     query = db_session.query(MyModel).all()
     assert len(query) == len(POSTS)
 
