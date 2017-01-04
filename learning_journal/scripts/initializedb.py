@@ -69,7 +69,9 @@ def main(argv=sys.argv):
 
     # with transaction.manager:
     #     dbsession = get_tm_session(session_factory, transaction.manager)
-
+    #     print('before')
     #     for entry in ENTRIES:
+    #         print("during")
     #         model = MyModel(title=entry['title'], date=entry['date'], day=entry['day'], body=entry['body'])
     #         dbsession.add(model)
+

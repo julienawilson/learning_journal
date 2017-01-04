@@ -14,7 +14,10 @@ from learning_journal.scripts.initializedb import ENTRIES
 import faker
 import datetime
 
+from passlib.apps import custom_app_context as pwd_context
+
 TEST_DB = 'postgres://julienawilson:postword!!@localhost:5432/test_db'
+TEST_DB2 = 'postgres://julienawilson:postword!!@localhost:5432/test_db2'
 
 
 @pytest.fixture(scope="session")
@@ -161,7 +164,7 @@ def test_edit_page_renders_file_data(dummy_request, add_models):
 # --------- Functional Tests ---------
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def testapp():
     """Create an instance of webtests TestApp for testing routes."""
     from webtest import TestApp
@@ -172,9 +175,17 @@ def testapp():
 
     SessionFactory = app.registry["dbsession_factory"]
     engine = SessionFactory().bind
-    Base.metadata.create_all(bind=engine)
+    # Base.metadata.create_all(bind=engine)
 
     return testapp
+
+
+@pytest.fixture(scope='function')
+def authenticate(testapp):
+    os.environ['AUTH_USERNAME'] = 'testname'
+    os.environ['AUTH_PASSWORD'] = pwd_context.hash('testword')
+    params = {'username': 'testname', 'password': 'testword'}
+    testapp.post('/login', params)
 
 
 @pytest.fixture
@@ -183,7 +194,10 @@ def fill_the_db(testapp):
     SessionFactory = testapp.app.registry["dbsession_factory"]
     with transaction.manager:
         dbsession = get_tm_session(SessionFactory, transaction.manager)
-        dbsession.add_all(POSTS)
+        try:
+            dbsession.add_all(POSTS)
+        except IntegrityError:
+            pass
     return dbsession
 
 
@@ -236,33 +250,32 @@ def test_403_error_unauth_edit(testapp):
     testapp.get('/journal/3/edit-entry', status=403)
 
 
-def test_edit_view_renders(testapp):
+def test_edit_view_renders(testapp, authenticate):
     """The edit page renders."""
-    TestCase.config.testing_securitypolicy(userid='julienawilson', permissive=True)
     response = testapp.get('/journal/1/edit-entry', status=200)
     html = str(response.html)
     some_text = "Julien Wilson"
     assert some_text in html
 
 
-# def test_edit_view_post(testapp):
-#     """The edit page posts."""
-#     post_params = {
-#         'title': FAKE.name(),
-#         'body': FAKE.address()
-#     }
-#     response = testapp.post('/journal/1/edit-entry', post_params, status=302)
-#     home_response = response.follow()
-#     html = str(home_response.html)
-#     some_text = post_params['title']
-#     assert some_text in html
+def test_edit_view_post(testapp, authenticate):
+    """The edit page posts."""
+    post_params = {
+        'title': FAKE.name(),
+        'body': FAKE.address()
+    }
+    response = testapp.post('/journal/1/edit-entry', post_params, status=302)
+    home_response = response.follow()
+    html = str(home_response.html)
+    some_text = post_params['title']
+    assert some_text in html
 
 
-# def test_edit_view_renders_data(testapp):
-#     """The edit page renders data from db."""
-#     response = testapp.get('/journal/1/edit-entry', status=200)
-#     html = response.html
-#     assert html.find_all("textarea")[0].text
+def test_edit_view_renders_data(testapp, authenticate):
+    """The edit page renders data from db."""
+    response = testapp.get('/journal/1/edit-entry', status=200)
+    html = response.html
+    assert html.find_all("textarea")[0].text
 
 
 def test_403_error_unauth_create(testapp):
@@ -270,22 +283,22 @@ def test_403_error_unauth_create(testapp):
     testapp.get('/journal/new-entry', status=403)
 
 
-# def test_create_view_renders(testapp):
-#     """The create page has my name in the html."""
-#     response = testapp.get('/journal/new-entry', status=200)
-#     html = str(response.html)
-#     some_text = "Julien Wilson"
-#     assert some_text in html
+def test_create_view_renders(testapp, authenticate):
+    """The create page has my name in the html."""
+    response = testapp.get('/journal/new-entry', status=200)
+    html = str(response.html)
+    some_text = "Julien Wilson"
+    assert some_text in html
 
 
-# def test_create_view_post(testapp):
-#     """The create page has my name in the posts."""
-#     post_params = {
-#         'title': FAKE.name(),
-#         'body': FAKE.address()
-#     }
-#     response = testapp.post('/journal/new-entry', post_params, status=302)
-#     home_response = response.follow()
-#     html = str(home_response.html)
-#     some_text = post_params['title']
-#     assert some_text in html
+def test_create_view_post(testapp, authenticate):
+    """The create page has my name in the posts."""
+    post_params = {
+        'title': FAKE.name(),
+        'body': FAKE.address()
+    }
+    response = testapp.post('/journal/new-entry', post_params, status=302)
+    home_response = response.follow()
+    html = str(home_response.html)
+    some_text = post_params['title']
+    assert some_text in html
