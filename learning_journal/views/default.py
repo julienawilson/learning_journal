@@ -12,6 +12,8 @@ from pyramid.httpexceptions import HTTPFound
 from learning_journal.security import check_credentials
 
 from pyramid.security import remember, forget
+from pyramid.session import check_csrf_token
+
 
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
