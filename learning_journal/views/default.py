@@ -61,7 +61,8 @@ def edit_view(request):
     the_id = request.matchdict["id"]
     try:
         query = request.dbsession.query(MyModel)
-        entry = query.filter(MyModel.id == the_id).first()
+        entry = query.filter_by(id=the_id).first()
+
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
 

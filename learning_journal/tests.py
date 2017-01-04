@@ -3,8 +3,8 @@ import os
 import pytest
 import transaction
 
-from unittest import TestCase
 from pyramid import testing
+from pyramid.config import Configurator
 
 from learning_journal.models import MyModel, get_tm_session
 
@@ -17,7 +17,6 @@ import datetime
 from passlib.apps import custom_app_context as pwd_context
 
 TEST_DB = 'postgres://julienawilson:postword!!@localhost:5432/test_db'
-TEST_DB2 = 'postgres://julienawilson:postword!!@localhost:5432/test_db2'
 
 
 @pytest.fixture(scope="session")
@@ -43,7 +42,7 @@ def configuration(request):
     return config
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def db_session(configuration, request):
     """Create a session for interacting with the test database.
 
@@ -54,6 +53,7 @@ def db_session(configuration, request):
     SessionFactory = configuration.registry["dbsession_factory"]
     session = SessionFactory()
     engine = session.bind
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
     def teardown():
@@ -72,18 +72,24 @@ def dummy_request(db_session):
 
 FAKE = faker.Faker()
 
-POSTS = [MyModel(
-    title=FAKE.name(),
-    date=str(datetime.datetime.now()),
-    body=FAKE.text(100),
-    day=i
-) for i in range(20)]
+POSTS = [{
+    'title': FAKE.name(),
+    'date': str(datetime.datetime.now()),
+    "body": FAKE.text(100),
+    "day": i
+} for i in range(20)]
 
 
 @pytest.fixture
 def add_models(dummy_request):
     """Add fake model instances to the database."""
-    dummy_request.dbsession.add_all(POSTS)
+    new_models = [MyModel(
+        title=post['title'],
+        date=post['date'],
+        body=post['body'],
+        day=post['day']
+    ) for post in POSTS]
+    dummy_request.dbsession.add_all(new_models)
 
 
 # --------- Database Tests ---------
@@ -144,23 +150,6 @@ def test_home_page_renders_file_data(dummy_request, add_models):
     response = home_view(dummy_request)
     assert len(response['ENTRIES']) == 20
 
-
-def test_detail_page_renders_file_data(dummy_request, add_models):
-    """My detail page view returns some appropriate data."""
-    from learning_journal.views.default import blog_view
-    dummy_request.matchdict['id'] = POSTS[0].id
-    response = blog_view(dummy_request)['entry'].body
-    assert response
-
-
-def test_edit_page_renders_file_data(dummy_request, add_models):
-    """My edit page view returns data from the approriate post."""
-    from learning_journal.views.default import edit_view
-    dummy_request.matchdict['id'] = POSTS[2].id
-    response = edit_view(dummy_request)['entry'].body
-    assert response
-
-
 # --------- Functional Tests ---------
 
 
@@ -168,13 +157,24 @@ def test_edit_page_renders_file_data(dummy_request, add_models):
 def testapp():
     """Create an instance of webtests TestApp for testing routes."""
     from webtest import TestApp
-    from learning_journal import main
+
+    def main(global_config, **settings):
+        """ This function returns a Pyramid WSGI application.
+        """
+        config = Configurator(settings=settings)
+        config.include('pyramid_jinja2')
+        config.include('learning_journal.models')
+        config.include('learning_journal.routes')
+        config.include('learning_journal.security')
+        config.scan()
+        return config.make_wsgi_app()
 
     app = main({}, **{"sqlalchemy.url": TEST_DB})
+
     testapp = TestApp(app)
 
-    SessionFactory = app.registry["dbsession_factory"]
-    engine = SessionFactory().bind
+    # SessionFactory = app.registry["dbsession_factory"]
+    # engine = SessionFactory().bind
     # Base.metadata.create_all(bind=engine)
 
     return testapp
@@ -188,17 +188,19 @@ def authenticate(testapp):
     testapp.post('/login', params)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def fill_the_db(testapp):
     """Fill the database with some model instances."""
     SessionFactory = testapp.app.registry["dbsession_factory"]
     with transaction.manager:
         dbsession = get_tm_session(SessionFactory, transaction.manager)
-        try:
-            dbsession.add_all(POSTS)
-        except IntegrityError:
-            pass
-    return dbsession
+        new_models = [MyModel(
+            title=post['title'],
+            date=post['date'],
+            body=post['body'],
+            day=post['day']
+        ) for post in POSTS]
+        dbsession.add_all(new_models)
 
 
 def test_home_view_renders(testapp):
@@ -218,7 +220,7 @@ def test_home_view_renders_data(testapp, fill_the_db):
     """The home page displays data from the database."""
     response = testapp.get('/', status=200)
     html = response.html
-    db_len = len(fill_the_db.query(MyModel).all())
+    db_len = len(POSTS)
     assert len(html.find_all("h2")) == db_len + 1
 
 
@@ -226,7 +228,7 @@ def test_home_view_renders_correct_data(testapp, fill_the_db):
     """The home page displays the correct data from the database."""
     response = testapp.get('/', status=200)
     html = response.html
-    title = fill_the_db.query(MyModel).first().title
+    title = POSTS[0]['title']
     assert title in html.find_all('h2')[1].text
 
 
@@ -238,9 +240,9 @@ def test_detail_view_renders(testapp):
     assert some_text in html
 
 
-def test_detail_view_renders_data(testapp):
+def test_detail_view_renders_data(testapp, fill_the_db):
     """The detail page has data from db in the html."""
-    response = testapp.get('/journal/1', status=200)
+    response = testapp.get('/journal/21', status=200)
     html = response.html
     assert html.find_all("h1")[0].text
 
@@ -258,23 +260,24 @@ def test_edit_view_renders(testapp, authenticate):
     assert some_text in html
 
 
-def test_edit_view_post(testapp, authenticate):
+def test_edit_view_post(testapp, fill_the_db, authenticate):
     """The edit page posts."""
     post_params = {
         'title': FAKE.name(),
         'body': FAKE.address()
     }
-    response = testapp.post('/journal/1/edit-entry', post_params, status=302)
+    response = testapp.post('/journal/21/edit-entry', post_params, status=302)
     home_response = response.follow()
     html = str(home_response.html)
     some_text = post_params['title']
     assert some_text in html
 
 
-def test_edit_view_renders_data(testapp, authenticate):
+def test_edit_view_renders_data(testapp, authenticate, fill_the_db):
     """The edit page renders data from db."""
-    response = testapp.get('/journal/1/edit-entry', status=200)
+    response = testapp.get('/journal/21/edit-entry', status=200)
     html = response.html
+    # import pdb; pdb.set_trace()
     assert html.find_all("textarea")[0].text
 
 
