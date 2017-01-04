@@ -78,6 +78,8 @@
                     <h4>New Post:</h4>
                     <form method="POST" role="form">
                         <div class="form-group">
+                            <input type="hidden" name="csrf_token" 
+                            value={{ request.session.get_csrf_token() }} />
                             <label for='title'>Title</label>
                             <input type="text" name='title' class="form-control"></input>
                            

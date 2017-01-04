@@ -78,6 +78,9 @@
                     <h4>Edit Post: {{ entry['title'] }}</h4>
                     <form role="form" method='POST'>
                         <div class="form-group">
+                            <input type="hidden" name="csrf_token" 
+                            value={{ request.session.get_csrf_token() }} />
+
                             <label for='title'>Title</label>
                             <input class="form-control" name='title' value="{{ entry['title'] }}"></input>
                             <br>
