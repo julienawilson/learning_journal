@@ -15,12 +15,11 @@ from pyramid.security import remember, forget
 from pyramid.session import check_csrf_token
 
 
-
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
 def home_view(request):
     try:
         query = request.dbsession.query(MyModel)
-        entries = query.all()
+        entries = query.all()[::-1]
     except DBAPIError:
         return Response(db_err_msg, content_type='text/plain', status=500)
     return {'ENTRIES': entries}
