@@ -35,8 +35,7 @@ def home_view(request):
         print("done creating model")
         request.dbsession.add(model)
         print("posted model")
-        return {}
-        # return HTTPFound(request.route_url("home"))
+        return HTTPFound(request.route_url("home"))
 
 
 @view_config(route_name='blog', renderer='../templates/detail.jinja2')

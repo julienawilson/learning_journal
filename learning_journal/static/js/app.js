@@ -20,7 +20,14 @@ $(document).ready(function(){
                 "body": body
             },
             success: function(){
-                post_template = '<h2><a href="/">' + title + '</a></h2>'+
+                var href = $('h2 a').attr('href').split('/').slice(1);
+                var new_post_id = Number(href[1]) + 1;
+                var new_post_href = href[0] + '/' + new_post_id.toString();
+                console.log(new_post_id);
+
+
+                console.log(new_post_href)
+                post_template = '<h2><a href="' + new_post_href + '">' + title + '</a></h2>'+
                     '<p class="lead">by <a href="/about_me">Julien Wilson</a></p>'+
                     '<p><span class="glyphicon glyphicon-time"></span> Posted on Today</p>'+
                     '<br/>'
