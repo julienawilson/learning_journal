@@ -5,7 +5,7 @@ $(document).ready(function(){
         var title = $(this).parent().find("input[name='title']")[0].value;
         var body = $(this).parent().find("textarea[name='body']")[0].value;
         $.ajax({
-            url: '/',
+            url: '/journal/1',
             type: "POST",
             data:{
                 "csrf_token": $(this).parent().find("input[name='csrf_token']")[0].value,
@@ -13,15 +13,7 @@ $(document).ready(function(){
                 "body": body
             },
             success: function(){
-                var href = $('h2 a').attr('href').split('/').slice(1);
-                var new_post_id = Number(href[1]) + 1;
-                var new_post_href = href[0] + '/' + new_post_id.toString();
-                post_template = '<h2><a href="' + new_post_href + '">' + title + '</a></h2>'+
-                    '<p class="lead">by <a href="/about_me">Julien Wilson</a></p>'+
-                    '<p><span class="glyphicon glyphicon-time"></span> Posted Just Now</p>'+
-                    '<br/>'
-                $('#posts').prepend(post_template);
-                $('form')[0].reset();
+               console.log('Post edited.')
             },
             error: function(err){
                 console.error(err);
