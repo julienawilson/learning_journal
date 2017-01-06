@@ -172,9 +172,6 @@ def testapp():
 
     testapp = TestApp(app)
 
-    # SessionFactory = app.registry["dbsession_factory"]
-    # engine = SessionFactory().bind
-    # Base.metadata.create_all(bind=engine)
 
     return testapp
 
@@ -183,7 +180,7 @@ def testapp():
 def authenticate(testapp):
     os.environ['AUTH_USERNAME'] = 'testname'
     os.environ['AUTH_PASSWORD'] = pwd_context.hash('testword')
-    params = {'username': 'testname', 'password': 'testword'}
+    params = {'username': 'testname', 'password': 'testword', }
     testapp.post('/login', params)
 
 
@@ -203,7 +200,7 @@ def fill_the_db(testapp):
 
 
 def test_home_view_renders(testapp):
-    """The home page has a table in the html."""
+    """The home page title in the html."""
     response = testapp.get('/', status=200)
     html = str(response.html)
     some_text = "Learning Blog"
@@ -276,7 +273,6 @@ def test_edit_view_renders_data(testapp, authenticate, fill_the_db):
     """The edit page renders data from db."""
     response = testapp.get('/journal/21/edit-entry', status=200)
     html = response.html
-    # import pdb; pdb.set_trace()
     assert html.find_all("textarea")[0].text
 
 
