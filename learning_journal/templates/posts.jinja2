@@ -60,6 +60,9 @@
                     <li>
                         <a href="/logout">Logout</a>
                     </li>
+                    <li>
+                       <a href="/journal/new-entry">New Post</a>
+                    </li>
                     {% else %}
                     <li>
                         <a href="/login">Login</a>
@@ -85,12 +88,28 @@
                     <small>Surviving Advanced Python</small>
                 </h1>
 
+                {% if request.authenticated_userid %}
                 <!-- New Post -->
-                <h2>
-                    <a href="/journal/new-entry">New Post</a>
-                </h2>
-                <br/>
 
+                <div class="well">
+                    <h4>New Post:</h4>
+                    <form method="POST" role="form">
+                        <div class="form-group">
+                            <input type="hidden" name="csrf_token" 
+                            value={{ request.session.get_csrf_token() }} />
+                            <label for='title'>Title</label>
+                            <input id='titleentry' type="text" name='title' class="form-control"></input>
+                           
+                            <br>
+
+                            <label for='body'>Body</label>
+                            <textarea type='text' name='body' class="form-control" rows="10"></textarea>
+                        </div>
+                        <button type="submit" class="submit btn btn-primary">Submit</button>
+                    </form>
+                </div>
+                <div id="posts">
+                {% endif %}
                 <!-- Most Recent Blog Post -->
                     {% for entry in ENTRIES %}
                     <h2>
@@ -103,7 +122,7 @@
                     <br/>
 
                     {% endfor %}
-                                
+                 </div>               
                 <br/>
 
                 <!-- Pager -->
@@ -200,8 +219,8 @@
     <script src="../static/js/jquery.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="../static/js/bootstrap.min.js"></script>
-
+    <!-- <script src="../static/js/bootstrap.min.js"></script> -->
+    <script type="text/javascript" src="../static/js/app.js"></script>
 </body>
 
 </html>

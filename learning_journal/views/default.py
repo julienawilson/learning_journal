@@ -17,12 +17,26 @@ from pyramid.session import check_csrf_token
 
 @view_config(route_name='home', renderer='../templates/posts.jinja2')
 def home_view(request):
-    try:
-        query = request.dbsession.query(MyModel)
-        entries = query.all()[::-1]
-    except DBAPIError:
-        return Response(db_err_msg, content_type='text/plain', status=500)
-    return {'ENTRIES': entries}
+    if request.method == "GET":
+        try:
+            query = request.dbsession.query(MyModel)
+            entries = query.all()[::-1]
+        except DBAPIError:
+            return Response(db_err_msg, content_type='text/plain', status=500)
+        return {'ENTRIES': entries}
+
+    if request.method == "POST":
+        print("poting method")
+        new_title = request.POST['title']
+        new_body = request.POST['body']
+        new_date = str(datetime.datetime.now().date())
+
+        model = MyModel(title=new_title, date=new_date, body=new_body)
+        print("done creating model")
+        request.dbsession.add(model)
+        print("posted model")
+        return {}
+        # return HTTPFound(request.route_url("home"))
 
 
 @view_config(route_name='blog', renderer='../templates/detail.jinja2')
