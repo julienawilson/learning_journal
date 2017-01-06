@@ -6,7 +6,6 @@ $(document).ready(function(){
     // var csrf_token = "{{ request.session.get_csrf_token() }}";
     var button = $(".submit");
     button.on("click", function(e){
-        console.log(e);
         e.preventDefault();
         var title = $(this).parent().find("input[name='title']")[0].value;
         var body = $(this).parent().find("textarea[name='body']")[0].value;
@@ -21,13 +20,11 @@ $(document).ready(function(){
                 "body": body
             },
             success: function(){
-                console.log("Added new entry.");
                 post_template = '<h2><a href="/">' + title + '</a></h2>'+
                     '<p class="lead">by <a href="/about_me">Julien Wilson</a></p>'+
                     '<p><span class="glyphicon glyphicon-time"></span> Posted on Today</p>'+
                     '<br/>'
                 $('#posts').prepend(post_template);
-                console.log("im getting here");
                 $('form')[0].reset();
 
 
