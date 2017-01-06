@@ -2,9 +2,13 @@
 
 A blog app built with the Pyramid framework.
 
+The site utilizes AuthN, AuthZ, and CSRF form protection.
+
+Supports tweeting from blog detail pages.
 
 
 https://mighty-ravine-38007.herokuapp.com/
+
 
 Step 4 Coverage:
 
